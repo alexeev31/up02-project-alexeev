@@ -1,0 +1,31 @@
+* 077e4ea ДЗ: правила .gitignore для Jupyter, Excel и db-journal
+* 1611791 Добавлен important.txt, лог и tmp проигнорированы
+* 156b0f3 Добавлен .gitignore с правилами для Python
+*   9f38bac ДЗ: работа с удалённым репозиторием
+|\  
+| * 2bfa120 Update README.md
+* | d3795fd README: список выполненных пар
+|/  
+*   4251338 Merge pull request #2 from alexeev31/feature/homework-8
+|\  
+| * fbb5895 ДЗ: файл homework_info.txt
+|/  
+*   b708af1 Разрешён конфликт с GitHub
+|\  
+| * 61a0faa Update README.md
+* | 01be471 Локальное изменение README
+|/  
+*   ea35dc4 Merge pull request #1 from alexeev31/feature/remote-test
+|\  
+| * 197bf18 Добавлен файл в ветке feature/remote-test
+|/  
+* 72c6919 Update README.md
+* 32595a2 Добавлен метод is_low_stock
+*   df3e3ce ДЗ: работа с ветками и конфликтами
+|\  
+| * 9d99b14 README: описание варианта (ветка conflict-2)
+* | 38fd6b8 README: описание предметной области (main)
+|/  
+* ecbd2ea ДЗ: метод order_info в классе Order
+*   0888118 Разрешён конфликт: скидка 25%
+|\  
