@@ -23,9 +23,10 @@ def create_product_card(parent, product):
     qty = product[5]
     bg_color = COLOR_HIGHLIGHT if qty <= 3 else "white"
 
-    # Карточка — рамка со всех сторон
-    card = tk.Frame(parent, bg=bg_color, bd=1, relief="solid")
-    card.pack(fill="x", padx=10, pady=5)
+    # Карточка без рамки, снизу — разделитель (вариант 2 макета)
+    card = tk.Frame(parent, bg=bg_color)
+    card.pack(fill="x", padx=10, pady=(5, 0))
+    ttk.Separator(parent, orient="horizontal").pack(fill="x", padx=10, pady=(5, 0))
 
     # === Изображение (слева) ===
     img_frame = tk.Frame(card, bg=bg_color)

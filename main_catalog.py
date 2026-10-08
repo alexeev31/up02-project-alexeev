@@ -1,6 +1,7 @@
 """Главное окно приложения с каталогом."""
 import tkinter as tk
 from tkinter import ttk
+from PIL import Image, ImageTk
 from config import APP_TITLE, FONT_FAMILY, COLOR_SECONDARY
 import database as db
 from catalog import create_product_card
@@ -23,9 +24,18 @@ class CatalogWindow:
         # Заголовок
         header = tk.Frame(self.root, bg=COLOR_SECONDARY)
         header.pack(fill="x")
+
+        # Логотип слева в шапке
+        try:
+            logo = Image.open("resources/logo.png").resize((50, 50))
+            self.logo_photo = ImageTk.PhotoImage(logo)   # ссылка, чтобы не удалил сборщик мусора
+            tk.Label(header, image=self.logo_photo, bg=COLOR_SECONDARY).pack(side="left", padx=10, pady=5)
+        except OSError:
+            pass
+
         tk.Label(header, text="КАТАЛОГ ТОВАРОВ",
                  font=(FONT_FAMILY, 16, "bold"),
-                 bg=COLOR_SECONDARY).pack(pady=15)
+                 bg=COLOR_SECONDARY).pack(side="left", pady=15)
 
         # Область с прокруткой
         self.canvas = tk.Canvas(self.root, bg="white", highlightthickness=0)
