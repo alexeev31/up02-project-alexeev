@@ -6,3 +6,6 @@ venv/
 env/
 *.db
 credentials.txt
+
+# БД проекта нужна в репозитории (для проверки преподавателем)
+!databases/*.db
