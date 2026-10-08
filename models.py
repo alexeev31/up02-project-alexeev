@@ -1,4 +1,6 @@
 """Модели данных для проекта УП.02."""
+from datetime import datetime
+from discount import calculate_price_with_discount
 
 
 class Product:
@@ -34,6 +36,12 @@ class Product:
     def price_with_discount(self, discount_percent):
         """Цена со скидкой."""
         return self.price * (1 - discount_percent / 100)
+
+    def price_with_discount_auto(self, date=None):
+        """Цена со скидкой по алгоритму ДЭ."""
+        if date is None:
+            date = datetime.now()
+        return calculate_price_with_discount(self.id, self.price, date)
 
     def indicator(self):
         """Индикатор «много/мало» (порог 5)."""
