@@ -3,7 +3,7 @@ import os
 import tkinter as tk
 from tkinter import ttk
 
-from styles import COLOR_MAIN_BG, COLOR_SECONDARY_BG, FONT_SIZE_TITLE, font
+from styles import COLOR_MAIN_BG, COLOR_SECONDARY_BG, FONT_SIZE_TITLE, font, make_button
 from config import APP_TITLE
 import database as db
 from catalog import create_product_card
@@ -55,6 +55,9 @@ class CatalogWindow:
             tk.Label(header, text="[ЛОГОТИП]",
                      bg=COLOR_SECONDARY_BG).pack(side="left", padx=15)
 
+        # Кнопка «Обновить» (справа) — акцентный цвет #70B2AF
+        make_button(header, "Обновить", self.reload_products).pack(side="right", padx=15, pady=18)
+
         # Заголовок (по центру)
         tk.Label(header, text="КАТАЛОГ ТОВАРОВ",
                  font=font(FONT_SIZE_TITLE, bold=True),
@@ -81,6 +84,12 @@ class CatalogWindow:
         products = db.get_all_products()
         for p in products:
             create_product_card(self.catalog_frame, p)
+
+    def reload_products(self):
+        """Перечитать товары из БД (например, после изменения остатков)."""
+        for widget in self.catalog_frame.winfo_children():
+            widget.destroy()
+        self.load_products()
 
     def run(self):
         self.root.mainloop()
