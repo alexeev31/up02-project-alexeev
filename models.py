@@ -55,6 +55,10 @@ class Product:
         """Есть ли товар в наличии (количество > 0)."""
         return self.quantity > 0
 
+    def is_low_stock(self):
+        """Мало на складе (≤ 3) — такие товары подсвечиваются."""
+        return self.quantity <= 3
+
     def has_image(self):
         """Есть ли у товара фото."""
         return bool(self.image)

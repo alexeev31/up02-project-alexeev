@@ -69,7 +69,7 @@ def print_catalog_with_highlight(products):
         print("   (нет товаров)")
 
     for p in products:
-        highlight = "⚠️" if p.quantity <= 3 else "  "
+        highlight = "⚠️" if p.is_low_stock() else "  "
         print(f"{highlight} {p.info()}")
 
     print("=" * 70)
