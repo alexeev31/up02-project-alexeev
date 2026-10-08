@@ -39,6 +39,10 @@ class Product:
         """Индикатор «много/мало» (порог 5)."""
         return "много" if self.quantity > 5 else "мало"
 
+    def is_available(self):
+        """Есть ли товар в наличии (количество > 0)."""
+        return self.quantity > 0
+
     def has_image(self):
         """Есть ли у товара фото."""
         return bool(self.image)
@@ -49,4 +53,25 @@ class Product:
             f"{self.name} ({self.category}): "
             f"{self.price} руб. × {self.quantity} = {self.total()} руб. "
             f"({self.indicator()})"
+        )
+
+
+class Order:
+    """Класс Заказ."""
+
+    def __init__(self, order_id, date, client, product, quantity):
+        self.id = order_id
+        self.date = date
+        self.client = client
+        self.product = product      # объект Product
+        self.quantity = quantity
+
+    def total(self):
+        """Стоимость заказа."""
+        return self.product.price * self.quantity
+
+    def info(self):
+        return (
+            f"Заказ №{self.id} от {self.date}: {self.client} — "
+            f"{self.product.name} × {self.quantity} = {self.total()} руб."
         )
