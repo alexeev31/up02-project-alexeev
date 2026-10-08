@@ -54,10 +54,15 @@ def calculate_price_with_discount(product_id, price, date, percent=DISCOUNT_PERC
 
     :param product_id: id товара
     :param price: базовая цена
-    :param date: дата расчёта
+    :param date: дата расчёта (datetime или строка "YYYY-MM-DD")
     :param percent: размер скидки, % (по умолчанию 25)
     :return: цена со скидкой или без
     """
+    if price < 0:
+        raise ValueError(f"Цена не может быть отрицательной: {price}")
+    if isinstance(date, str):
+        date = datetime.strptime(date, "%Y-%m-%d")
+
     if has_orders_in_previous_month(product_id, date):
         return price
     return round(price * (1 - percent / 100), 2)

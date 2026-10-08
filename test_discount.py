@@ -4,32 +4,35 @@ from discount import calculate_price_with_discount
 
 
 def run_tests():
-    """Прогон тестов."""
-    date = datetime(2026, 10, 15)
-
     test_cases = [
-        # (id, цена, ожидание, пояснение)
-        (1, 600, 600, "Маргарита — есть заказ 15.09"),
-        (2, 800, 800, "Филадельфия — есть заказ 20.09"),
-        (3, 400, 400, "Чизбургер — есть заказ 25.09"),
-        (4, 350, 262.5, "Цезарь — нет заказов → 25% скидка"),
-        (5, 550, 412.5, "Карбонара — нет заказов → скидка"),
+        # (product_id, price, date, expected, comment)
+        (1, 600, datetime(2026, 10, 15), 600, "Заказы есть в сентябре"),
+        (2, 800, datetime(2026, 10, 15), 800, "Заказы есть в сентябре"),
+        (3, 400, datetime(2026, 10, 15), 400, "Заказы есть"),
+        (4, 350, datetime(2026, 10, 15), 262.5, "Заказов нет → скидка"),
+        (5, 550, datetime(2026, 10, 15), 412.5, "Заказов нет → скидка"),
+
+        # Новые тесты
+        # исправлено: в октябре 2026 заказов в БД нет → скидка есть
+        (2, 800, datetime(2026, 11, 15), 600.0, "В октябре заказов нет → скидка"),
+        (1, 600, datetime(2026, 11, 15), 450.0, "В октябре заказов нет → скидка"),
+        (4, 350, datetime(2026, 9, 1), 262.5, "Август — заказов нет"),
     ]
 
-    print("=" * 60)
-    print("ТЕСТИРОВАНИЕ АЛГОРИТМА СКИДКИ")
-    print("=" * 60)
+    print("=" * 70)
+    print("РАСШИРЕННОЕ ТЕСТИРОВАНИЕ АЛГОРИТМА СКИДКИ")
+    print("=" * 70)
 
     passed = 0
-    for product_id, price, expected, comment in test_cases:
+    for product_id, price, date, expected, comment in test_cases:
         result = calculate_price_with_discount(product_id, price, date)
         status = "✅" if result == expected else "❌"
         if result == expected:
             passed += 1
-        print(f"{status} Товар {product_id}: {price} → {result} "
-              f"(ожидалось {expected}) — {comment}")
+        print(f"{status} Товар {product_id} на {date.date()}: "
+              f"{price} → {result} (ожидалось {expected}) — {comment}")
 
-    print("=" * 60)
+    print("=" * 70)
     print(f"Пройдено: {passed} / {len(test_cases)}")
 
 
