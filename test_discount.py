@@ -32,8 +32,8 @@ def run_tests():
         print(f"{status} Товар {product_id} на {date.date()}: "
               f"{price} → {result} (ожидалось {expected}) — {comment}")
 
-    print("=" * 70)
-    print(f"Пройдено: {passed} / {len(test_cases)}")
+    print_test_report(passed, len(test_cases))
+    return passed, len(test_cases)
 
 
 def run_extra_tests():
@@ -59,8 +59,58 @@ def run_extra_tests():
         print(f"{status} {date:%d.%m.%Y} Товар {product_id}: {price} → {result} "
               f"(ожидалось {expected}) — {comment}")
 
+    print_test_report(passed, len(test_cases))
+    return passed, len(test_cases)
+
+
+def run_boundary_tests():
+    """ДЗ пары 6: граничные случаи."""
+    from models import Product
+
+    # отрицательного количества в БД нет, поэтому создаём товар вручную
+    pasta = Product(5, "Карбонара", "Паста", 550, -2)
+
+    try:
+        calculate_price_with_discount(4, -100, datetime(2026, 10, 15))
+        negative_price = "без ошибки"
+    except ValueError:
+        negative_price = "ValueError"
+
+    checks = [
+        # (пояснение, получено, ожидалось)
+        ("Расчёт 01.10.2026 — заказ Маргариты 15.09 учитывается",
+         calculate_price_with_discount(1, 600, datetime(2026, 10, 1)), 600),
+        ("Расчёт 31.10.2026 — предыдущий месяц всё ещё сентябрь",
+         calculate_price_with_discount(2, 800, datetime(2026, 10, 31)), 800),
+        ("Нулевая цена — скидка от 0 даёт 0",
+         calculate_price_with_discount(4, 0, datetime(2026, 10, 15)), 0.0),
+        ("Количество -2 — товара нет в наличии",
+         pasta.is_available(), False),
+        ("Заказ был в позапрошлом месяце (09), расчёт 10.11 → скидка",
+         calculate_price_with_discount(1, 600, datetime(2026, 11, 10)), 450.0),
+        ("Отрицательная цена — ошибка",
+         negative_price, "ValueError"),
+    ]
+
+    print("\nГРАНИЧНЫЕ СЛУЧАИ (ДЗ)")
     print("=" * 60)
-    print(f"Пройдено: {passed} / {len(test_cases)}")
+    passed = 0
+    for comment, result, expected in checks:
+        ok = result == expected
+        passed += ok
+        print(f"{'✅' if ok else '❌'} {comment}: {result} (ожидалось {expected})")
+
+    print_test_report(passed, len(checks))
+    return passed, len(checks)
+
+
+def print_test_report(passed, total):
+    """Итоговый отчёт о тестировании."""
+    print("=" * 40)
+    print("ОТЧЁТ О ТЕСТИРОВАНИИ")
+    print(f"Пройдено: {passed} / {total}")
+    print("Результат: ✅ УСПЕХ" if passed == total else "Результат: ❌ ЕСТЬ ОШИБКИ")
+    print("=" * 40)
 
 
 def check_all_products(date):
@@ -78,5 +128,6 @@ def check_all_products(date):
 
 if __name__ == "__main__":
     run_tests()
+    run_boundary_tests()
     run_extra_tests()
     check_all_products(datetime(2026, 10, 15))
