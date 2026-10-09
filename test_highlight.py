@@ -14,6 +14,10 @@ def test_highlight():
         (2, COLOR_HIGHLIGHT, "2 ≤ 3 — подсветка"),
         (1, COLOR_HIGHLIGHT, "1 ≤ 3 — подсветка"),
         (0, COLOR_HIGHLIGHT, "0 ≤ 3 — подсветка"),
+        # ДЗ
+        (1000, COLOR_MAIN_BG, "большое число — нет подсветки"),
+        (-1, COLOR_HIGHLIGHT, "отрицательное — подсветка"),
+        (3, COLOR_HIGHLIGHT, "граница (повторно)"),
     ]
 
     print("=" * 70)
