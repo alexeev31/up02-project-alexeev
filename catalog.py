@@ -30,7 +30,12 @@ def create_product_card(parent, product):
 
 
 def _get_card_color(qty):
-    """Возвращает цвет фона карточки."""
+    """
+    Возвращает цвет фона карточки.
+
+    :param qty: количество товара
+    :return: HEX-цвет
+    """
     return COLOR_HIGHLIGHT if qty <= 3 else COLOR_MAIN_BG
 
 
