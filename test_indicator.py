@@ -37,5 +37,18 @@ def test_indicator():
     print(f"Пройдено: {passed} / {len(test_cases)}")
 
 
+def test_bad_data():
+    """ДЗ пары 18: некорректные данные — падает функция или нет."""
+    print("\nНЕКОРРЕКТНЫЕ ДАННЫЕ")
+    print("=" * 60)
+    for qty in [None, "10", 0.5]:
+        try:
+            result = _indicator(qty)
+            print(f"✅ qty={qty!r}: {result}")
+        except Exception as e:
+            print(f"❌ qty={qty!r}: ошибка {type(e).__name__}")
+
+
 if __name__ == "__main__":
     test_indicator()
+    test_bad_data()

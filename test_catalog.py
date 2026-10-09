@@ -1,9 +1,12 @@
 """Тестирование каталога."""
+import os
+
 import database as db
 from catalog import format_price, shorten, MAX_NAME_LEN
+from resources import RESOURCES_DIR
 
 # индексы полей (вариант 4)
-NAME, PRICE, QTY = 2, 4, 5
+NAME, PRICE, QTY, IMAGE = 2, 4, 5, 6
 
 
 def test_db_available():
@@ -72,6 +75,16 @@ def test_names_not_empty():
     return True
 
 
+def test_has_image():
+    """ДЗ пары 18: хотя бы у одного товара есть изображение."""
+    products = db.get_all_products()
+    for p in products:
+        if p[IMAGE] and os.path.exists(os.path.join(RESOURCES_DIR, p[IMAGE])):
+            return True
+    print("❌ Ни у одного товара нет изображения")
+    return False
+
+
 def test_edge_cases():
     """ДЗ пары 12: цена > 1 000 000, длинное название, кириллица."""
     return (format_price(1250000) == "1 250 000"
@@ -91,6 +104,7 @@ def run_all_tests():
         ("Все цены — числа", test_prices_are_numbers),
         ("Количество не отрицательное", test_quantity_not_negative),
         ("Названия не пустые", test_names_not_empty),
+        ("Хотя бы у одного товара есть фото", test_has_image),
         ("Цена и длинные названия (пара 12)", test_edge_cases),
     ]
 
