@@ -6,6 +6,7 @@ from config import APP_TITLE
 import database as db
 from catalog import create_product_card
 from resources import load_image_proportional, PATH_LOGO, PATH_ICON
+from error_handler import safe_call
 
 
 def set_app_icon(root, icon_path):
@@ -75,9 +76,10 @@ class CatalogWindow:
         scrollbar.pack(side="right", fill="y")
 
     def load_products(self):
-        products = db.get_all_products()
+        """Загружает товары с обработкой ошибок."""
+        products = safe_call(db.get_all_products) or []
         for p in products:
-            create_product_card(self.catalog_frame, p)
+            safe_call(create_product_card, self.catalog_frame, p)
 
     def run(self):
         self.root.mainloop()

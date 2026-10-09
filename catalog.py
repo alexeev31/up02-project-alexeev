@@ -26,7 +26,21 @@ def create_product_card(parent, product):
     _add_image(card, product, bg_color)
     _add_text_info(card, product, bg_color, qty)
 
+    # Привязка клика
+    card.bind("<Button-1>", lambda e: _open_view(parent, product))
+    for child in card.winfo_children():
+        child.bind("<Button-1>", lambda e: _open_view(parent, product))
+        # метки лежат внутри фреймов — им тоже нужна привязка
+        for sub in child.winfo_children():
+            sub.bind("<Button-1>", lambda e: _open_view(parent, product))
+
     return card
+
+
+def _open_view(parent, product):
+    """Открывает форму просмотра товара."""
+    from view_form import ViewForm
+    ViewForm(parent, product)
 
 
 def _get_card_color(qty):
