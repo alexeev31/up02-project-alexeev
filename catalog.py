@@ -32,6 +32,20 @@ def create_product_card(parent, product):
     return card
 
 
+MAX_NAME_LEN = 60   # длинные названия обрезаем, чтобы не ломать карточку
+
+
+def format_price(price):
+    """Цена с разделителем тысяч: 1250000 → «1 250 000», 412.5 → «412.5»."""
+    text = f"{price:,.2f}".rstrip("0").rstrip(".")
+    return text.replace(",", " ")
+
+
+def shorten(text, max_len=MAX_NAME_LEN):
+    """Обрезает слишком длинный текст и ставит «…»."""
+    return text if len(text) <= max_len else text[:max_len - 1].rstrip() + "…"
+
+
 def _get_card_color(qty):
     """Возвращает цвет фона карточки."""
     return COLOR_HIGHLIGHT if qty <= 3 else COLOR_MAIN_BG
@@ -44,9 +58,12 @@ def _indicator(qty):
 
 def _add_label(parent, text, bg_color, bold=False,
                size=FONT_SIZE_NORMAL, align="w"):
-    """Добавляет метку с текстом."""
-    tk.Label(parent, text=text, font=font(size, bold=bold),
-             bg=bg_color, anchor=align).pack(fill="x")
+    """Добавляет метку с текстом (длинный текст переносится на новую строку)."""
+    label = tk.Label(parent, text=text, font=font(size, bold=bold),
+                     bg=bg_color, anchor=align, justify="left")
+    label.pack(fill="x")
+    # перенос по фактической ширине колонки, а не по фиксированному числу пикселей
+    label.bind("<Configure>", lambda e: e.widget.configure(wraplength=e.width))
 
 
 def _add_image(card, product, bg_color):
@@ -72,10 +89,10 @@ def _add_price(card, product, bg_color):
     price_frame = tk.Frame(card, bg=bg_color)
     price_frame.pack(side="right", padx=15, pady=10)
     if new_price != price:
-        tk.Label(price_frame, text=f"{price:g} руб.", fg="red",
+        tk.Label(price_frame, text=f"{format_price(price)} руб.", fg="red",
                  font=font(FONT_SIZE_NORMAL) + ("overstrike",),
                  bg=bg_color).pack(anchor="e")
-    _add_label(price_frame, f"{new_price:g} руб.", bg_color,
+    _add_label(price_frame, f"{format_price(new_price)} руб.", bg_color,
                bold=True, size=FONT_SIZE_HEADER, align="e")
 
 
@@ -85,7 +102,7 @@ def _add_text_info(card, product, bg_color, qty):
     text_frame.pack(side="left", fill="both", expand=True, padx=10, pady=10)
 
     # Проверка значений (крайние случаи)
-    name = product[2] if product[2] else "[Без названия]"
+    name = shorten(product[2]) if product[2] else "[Без названия]"
     weight = f"{product[3]} г" if product[3] else "[вес не указан]"
     category = product[1] if product[1] else "[Без категории]"
     composition = product[7] if product[7] else "[Не указан]"
