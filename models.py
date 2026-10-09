@@ -21,10 +21,11 @@ class Product:
         :param composition: состав
         """
         self.id = product_id
-        self.name = name
+        # пустые значения из БД (найдено при отладке, пара 15)
+        self.name = name if name else "[Без названия]"
         self.category = category
-        self.price = price
-        self.quantity = quantity
+        self.price = price if price is not None else 0
+        self.quantity = quantity if quantity is not None else 0
         self.weight = weight
         self.image = image
         self.composition = composition
