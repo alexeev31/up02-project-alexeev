@@ -10,6 +10,11 @@ from styles import (
 from resources import load_image, get_product_image
 from discount import calculate_price_with_discount
 from error_handler import safe_call, validate_positive_int
+from order_manager import (
+    add_order_to_db,
+    update_product_quantity,
+    get_product_quantity
+)
 
 
 class ViewForm:
@@ -110,21 +115,33 @@ class ViewForm:
 
     def add_to_order(self):
         """Обработчик кнопки «Добавить в заказ»."""
-        ok, result = validate_positive_int(self.qty_var.get(), "Количество")
-        if not ok:
-            messagebox.showwarning("Некорректные данные", result)
-            return
-
-        if not self.on_add_to_order:
-            messagebox.showinfo("Информация", "Функция в разработке")
-            return
-
         if not self.product:
             messagebox.showerror("Ошибка", "Товар не выбран")
             return
 
+        # количество из поля ввода (ДЗ пары 19)
+        ok, qty = validate_positive_int(self.qty_var.get(), "Количество")
+        if not ok:
+            messagebox.showwarning("Некорректные данные", qty)
+            return
+
         try:
-            self.on_add_to_order(self.product)
-            messagebox.showinfo("Успех", "Товар добавлен в заказ")
+            product_id = self.product[0]
+            current_qty = get_product_quantity(product_id)
+
+            if current_qty < qty:
+                messagebox.showwarning("Товар закончился",
+                                       f"Доступно только {current_qty} шт.")
+                return
+
+            new_qty = current_qty - qty
+            add_order_to_db("Иванов Иван Иванович", product_id, qty)
+            update_product_quantity(product_id, new_qty)
+
+            messagebox.showinfo("Успех", "Заказ оформлен")
+
+            if self.on_add_to_order:
+                self.on_add_to_order()
+
         except Exception as e:
             messagebox.showerror("Ошибка заказа", f"Не удалось добавить товар:\n{e}")

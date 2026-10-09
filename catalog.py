@@ -13,7 +13,7 @@ from discount import calculate_price_with_discount
 MAX_NAME_LEN = 35
 
 
-def create_product_card(parent, product):
+def create_product_card(parent, product, refresh=None):
     """Создаёт карточку товара по макету."""
     qty = product[5]   # вариант 4: количество
     bg_color = _get_card_color(qty)
@@ -27,20 +27,20 @@ def create_product_card(parent, product):
     _add_text_info(card, product, bg_color, qty)
 
     # Привязка клика
-    card.bind("<Button-1>", lambda e: _open_view(parent, product))
+    card.bind("<Button-1>", lambda e: _open_view(parent, product, refresh))
     for child in card.winfo_children():
-        child.bind("<Button-1>", lambda e: _open_view(parent, product))
+        child.bind("<Button-1>", lambda e: _open_view(parent, product, refresh))
         # метки лежат внутри фреймов — им тоже нужна привязка
         for sub in child.winfo_children():
-            sub.bind("<Button-1>", lambda e: _open_view(parent, product))
+            sub.bind("<Button-1>", lambda e: _open_view(parent, product, refresh))
 
     return card
 
 
-def _open_view(parent, product):
+def _open_view(parent, product, refresh=None):
     """Открывает форму просмотра товара."""
     from view_form import ViewForm
-    ViewForm(parent, product)
+    ViewForm(parent, product, on_add_to_order=refresh)
 
 
 def _get_card_color(qty):
