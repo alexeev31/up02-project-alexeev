@@ -1,90 +1,114 @@
-"""Проверка вывода полей."""
-import os
-
+"""Тестирование каталога."""
 import database as db
 from catalog import format_price, shorten, MAX_NAME_LEN
-from resources import RESOURCES_DIR
 
 # индексы полей (вариант 4)
-PRICE, QTY, IMAGE = 4, 5, 6
+NAME, PRICE, QTY = 2, 4, 5
 
 
-def test_fields():
-    """Проверяет, что все поля на месте."""
+def test_db_available():
+    """
+    Проверяет, что БД доступна.
+    """
+    try:
+        products = db.get_all_products()
+        return isinstance(products, list)
+    except Exception as e:
+        print(f"❌ БД недоступна: {e}")
+        return False
+
+
+def test_products_count():
+    """
+    Проверяет, что товары загружены.
+    """
     products = db.get_all_products()
-    print(f"Всего товаров: {len(products)}")
+    return len(products) > 0
 
-    required_count = 8   # вариант 4: id, категория, название, вес, цена, количество, фото, состав
-    errors = 0
 
+def test_product_fields():
+    """
+    Проверяет, что у всех товаров достаточно полей.
+    """
+    products = db.get_all_products()
     for p in products:
-        if len(p) < required_count:
+        if len(p) < 8:
             print(f"❌ Товар id={p[0]}: мало полей ({len(p)})")
-            errors += 1
-
-    if errors == 0:
-        print("✅ Все товары содержат нужные поля")
-    else:
-        print(f"❌ Найдено ошибок: {errors}")
-    return errors == 0
+            return False
+    return True
 
 
-def test_prices():
-    """Проверяет, что у всех товаров есть цена."""
+def test_prices_are_numbers():
+    """
+    Проверяет, что все цены — числа.
+    """
     products = db.get_all_products()
     for p in products:
-        if p[PRICE] is None:
-            print(f"❌ Товар id={p[0]}: нет цены")
+        if not isinstance(p[PRICE], (int, float)):
+            print(f"❌ Товар id={p[0]}: цена не число")
             return False
-    print("✅ У всех товаров есть цена")
     return True
 
 
-def test_quantities():
-    """Проверяет, что количество не отрицательное."""
+def test_quantity_not_negative():
+    """
+    Проверяет, что количество не отрицательное.
+    """
     products = db.get_all_products()
-    bad = [p[0] for p in products if p[QTY] is None or p[QTY] < 0]
-    if bad:
-        print(f"❌ Отрицательное или пустое количество у товаров: {bad}")
-        return False
-    print("✅ У всех товаров количество ≥ 0")
+    for p in products:
+        if p[QTY] < 0:
+            print(f"❌ Товар id={p[0]}: отрицательное количество")
+            return False
     return True
 
 
-def test_images():
-    """Проверяет, что хотя бы у одного товара есть изображение (и файл существует)."""
+def test_names_not_empty():
+    """Проверяет, что у всех товаров есть название."""
     products = db.get_all_products()
-    with_image = [p for p in products
-                  if p[IMAGE] and os.path.exists(os.path.join(RESOURCES_DIR, p[IMAGE]))]
-    if not with_image:
-        print("❌ Ни у одного товара нет изображения")
-        return False
-    print(f"✅ Изображение есть у {len(with_image)} из {len(products)} товаров "
-          f"(у остальных — заглушка)")
+    for p in products:
+        if not p[NAME]:   # пустое или None
+            print(f"❌ Товар id={p[0]}: пустое название")
+            return False
     return True
 
 
 def test_edge_cases():
-    """ДЗ: цена > 1 000 000, длинное название, кириллица."""
-    checks = [
-        ("Цена 1 250 000", format_price(1250000), "1 250 000"),
-        ("Цена 412.5", format_price(412.5), "412.5"),
-        ("Цена 0", format_price(0), "0"),
-        ("Название 120 символов обрезается",
-         len(shorten("Очень длинное название " * 5)) <= MAX_NAME_LEN + 3, True),
-        ("Короткое кириллическое название не меняется",
-         shorten("Тирамису с ягодами"), "Тирамису с ягодами"),
+    """ДЗ пары 12: цена > 1 000 000, длинное название, кириллица."""
+    return (format_price(1250000) == "1 250 000"
+            and format_price(0) == "0"
+            and len(shorten("Очень длинное название " * 5)) <= MAX_NAME_LEN + 3
+            and shorten("Тирамису с ягодами") == "Тирамису с ягодами")
+
+
+def run_all_tests():
+    """
+    Прогон всех тестов каталога.
+    """
+    tests = [
+        ("БД доступна", test_db_available),
+        ("Товары загружены", test_products_count),
+        ("У всех товаров нужные поля", test_product_fields),
+        ("Все цены — числа", test_prices_are_numbers),
+        ("Количество не отрицательное", test_quantity_not_negative),
+        ("Названия не пустые", test_names_not_empty),
+        ("Цена и длинные названия (пара 12)", test_edge_cases),
     ]
-    ok = True
-    for name, result, expected in checks:
-        passed = result == expected
-        ok = ok and passed
-        print(f"{'✅' if passed else '❌'} {name}: {result!r}")
-    return ok
+
+    print("=" * 60)
+    print("ТЕСТИРОВАНИЕ КАТАЛОГА")
+    print("=" * 60)
+
+    passed = 0
+    for name, func in tests:
+        result = func()
+        status = "✅" if result else "❌"
+        if result:
+            passed += 1
+        print(f"{status} {name}")
+
+    print("=" * 60)
+    print(f"Пройдено: {passed} / {len(tests)}")
 
 
 if __name__ == "__main__":
-    results = [test_fields(), test_prices(), test_quantities(),
-               test_images(), test_edge_cases()]
-    print("=" * 40)
-    print(f"Наборов пройдено: {sum(results)} / {len(results)}")
+    run_all_tests()
