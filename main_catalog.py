@@ -1,9 +1,7 @@
 """Главное окно с каталогом."""
-import os
 import tkinter as tk
 from tkinter import ttk
-
-from styles import COLOR_MAIN_BG, COLOR_SECONDARY_BG, FONT_SIZE_TITLE, font, make_button
+from styles import COLOR_SECONDARY_BG, FONT_FAMILY, FONT_SIZE_TITLE, font
 from config import APP_TITLE
 import database as db
 from catalog import create_product_card
@@ -12,6 +10,9 @@ from resources import load_image_proportional, PATH_LOGO, PATH_ICON
 
 def set_app_icon(root, icon_path):
     """Устанавливает иконку приложения кроссплатформенно."""
+    import os
+    from resources import load_image_proportional
+
     try:
         if os.name == "nt":   # Windows
             if os.path.exists(icon_path):
@@ -31,7 +32,6 @@ class CatalogWindow:
         self.root = tk.Tk()
         self.root.title(APP_TITLE)
         self.root.geometry("900x700")
-        self.root.configure(bg=COLOR_MAIN_BG)
 
         # Иконка приложения
         set_app_icon(self.root, PATH_ICON)
@@ -48,15 +48,12 @@ class CatalogWindow:
         # Логотип (слева) — с сохранением пропорций!
         logo = load_image_proportional(PATH_LOGO, max_size=(60, 60))
         if logo:
-            self.logo_label = tk.Label(header, image=logo, bg=COLOR_SECONDARY_BG)
-            self.logo_label.image = logo
-            self.logo_label.pack(side="left", padx=15)
+            logo_label = tk.Label(header, image=logo, bg=COLOR_SECONDARY_BG)
+            logo_label.image = logo
+            logo_label.pack(side="left", padx=15)
         else:
             tk.Label(header, text="[ЛОГОТИП]",
                      bg=COLOR_SECONDARY_BG).pack(side="left", padx=15)
-
-        # Кнопка «Обновить» (справа) — акцентный цвет #70B2AF
-        make_button(header, "Обновить", self.reload_products).pack(side="right", padx=15, pady=18)
 
         # Заголовок (по центру)
         tk.Label(header, text="КАТАЛОГ ТОВАРОВ",
@@ -64,18 +61,15 @@ class CatalogWindow:
                  bg=COLOR_SECONDARY_BG).pack(expand=True)
 
         # Область с прокруткой
-        self.canvas = tk.Canvas(self.root, bg=COLOR_MAIN_BG, highlightthickness=0)
+        self.canvas = tk.Canvas(self.root, bg="white", highlightthickness=0)
         scrollbar = ttk.Scrollbar(self.root, orient="vertical",
                                   command=self.canvas.yview)
-        self.catalog_frame = tk.Frame(self.canvas, bg=COLOR_MAIN_BG)
+        self.catalog_frame = tk.Frame(self.canvas, bg="white")
         self.catalog_frame.bind(
             "<Configure>",
             lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
         )
-        window = self.canvas.create_window((0, 0), window=self.catalog_frame, anchor="nw")
-        # карточки растягиваются на всю ширину окна
-        self.canvas.bind("<Configure>",
-                         lambda e: self.canvas.itemconfigure(window, width=e.width))
+        self.canvas.create_window((0, 0), window=self.catalog_frame, anchor="nw")
         self.canvas.configure(yscrollcommand=scrollbar.set)
         self.canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
@@ -84,12 +78,6 @@ class CatalogWindow:
         products = db.get_all_products()
         for p in products:
             create_product_card(self.catalog_frame, p)
-
-    def reload_products(self):
-        """Перечитать товары из БД (например, после изменения остатков)."""
-        for widget in self.catalog_frame.winfo_children():
-            widget.destroy()
-        self.load_products()
 
     def run(self):
         self.root.mainloop()

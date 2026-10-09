@@ -4,7 +4,7 @@
 Цвета (заданы в styles.py):
 #FFFFFF — основной фон окна, области каталога и карточек (COLOR_MAIN_BG)
 #D2F6E7 — фон шапки каталога с логотипом и заголовком (COLOR_SECONDARY_BG)
-#70B2AF — кнопки: «Обновить» в шапке, функция make_button (COLOR_ACCENT)
+#70B2AF — кнопки (функция make_button в styles.py, COLOR_ACCENT)
 #ff8080 — подсветка карточек товаров с количеством ≤3 (COLOR_HIGHLIGHT)
 
 Шрифт:

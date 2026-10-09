@@ -1,37 +1,34 @@
-"""Загрузка заказов из БД в объекты класса Order."""
+"""Загрузка заказов из БД."""
 import sqlite3
 from config import DB_PATH
-from models import Order
-from db_products import row_to_product
+from models import Product, Order
 
 
 def get_all_orders():
-    """Возвращает список объектов Order (товар подтягивается через JOIN)."""
+    """Возвращает список объектов Order."""
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     cur.execute(
-        "SELECT Заказ.id, Заказ.дата, Заказ.клиент, Заказ.количество, Товар.* "
-        "FROM Заказ JOIN Товар ON Заказ.товар_id = Товар.id "
-        "ORDER BY Заказ.id"
+        "SELECT Заказ.id, Заказ.дата, Заказ.клиент, Заказ.количество, "
+        "Товар.id, Товар.название, Товар.категория, Товар.цена, Товар.количество "
+        "FROM Заказ JOIN Товар ON Заказ.товар_id = Товар.id"
     )
     rows = cur.fetchall()
     conn.close()
 
     orders = []
     for row in rows:
-        order_id, date, client, quantity = row[:4]
-        product = row_to_product(row[4:])
-        orders.append(Order(order_id, date, client, product, quantity))
+        product = Product(row[4], row[5], row[6], row[7], row[8])
+        order = Order(row[0], row[1], row[2], product, row[3])
+        orders.append(order)
     return orders
 
 
 def print_orders(orders):
-    """Выводит заказы и общую сумму."""
+    """Выводит заказы."""
     print(f"\nВсего заказов: {len(orders)}\n")
     for order in orders:
         print(order.info())
-    print("-" * 60)
-    print(f"Итого по всем заказам: {sum(o.total() for o in orders)} руб.")
 
 
 if __name__ == "__main__":

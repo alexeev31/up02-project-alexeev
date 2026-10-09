@@ -67,8 +67,3 @@ def calculate_price_with_discount(product_id, price, date, percent=DISCOUNT_PERC
         return price
     return round(price * (1 - percent / 100), 2)
 
-
-if __name__ == "__main__":
-    today = datetime.now()
-    print(f"Дата расчёта: {today:%d.%m.%Y}")
-    print(f"Предыдущий месяц: {get_previous_month_range(today)}")
