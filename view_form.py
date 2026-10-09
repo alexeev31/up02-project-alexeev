@@ -9,6 +9,7 @@ from styles import (
 )
 from resources import load_image, get_product_image
 from discount import calculate_price_with_discount
+from error_handler import safe_call, validate_positive_int
 
 
 class ViewForm:
@@ -66,13 +67,25 @@ class ViewForm:
         info_frame.pack(side="left", fill="both", expand=True, padx=20)
 
         # вариант 4: производства и размеров в БД нет — вместо них вес и количество
-        price = calculate_price_with_discount(self.product[0], self.product[4], datetime.now())
+        price = safe_call(calculate_price_with_discount,
+                          self.product[0], self.product[4], datetime.now())
+        if price is None:
+            price = self.product[4]
         self._add_field(info_frame, "Вес", f"{self.product[3]} г")
         self._add_field(info_frame, "Наименование", self.product[2])
         self._add_field(info_frame, "Категория", self.product[1])
         self._add_field(info_frame, "Состав", self.product[7])
         self._add_field(info_frame, "Цена", f"{price} руб.")
         self._add_field(info_frame, "Количество", f"{self.product[5]} шт.")
+
+        # Поле ввода количества для заказа (ДЗ)
+        qty_row = tk.Frame(info_frame, bg=COLOR_MAIN_BG)
+        qty_row.pack(fill="x", pady=3)
+        tk.Label(qty_row, text="В заказ, шт.:", font=font(FONT_SIZE_NORMAL, bold=True),
+                 width=15, anchor="w", bg=COLOR_MAIN_BG).pack(side="left")
+        self.qty_var = tk.StringVar(value="1")
+        tk.Entry(qty_row, textvariable=self.qty_var, width=6,
+                 font=font(FONT_SIZE_NORMAL)).pack(side="left")
 
         # Кнопки
         btn_frame = tk.Frame(self.window, bg=COLOR_MAIN_BG)
@@ -97,6 +110,11 @@ class ViewForm:
 
     def add_to_order(self):
         """Обработчик кнопки «Добавить в заказ»."""
+        ok, result = validate_positive_int(self.qty_var.get(), "Количество")
+        if not ok:
+            messagebox.showwarning("Некорректные данные", result)
+            return
+
         if not self.on_add_to_order:
             messagebox.showinfo("Информация", "Функция в разработке")
             return
