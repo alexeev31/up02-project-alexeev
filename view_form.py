@@ -10,6 +10,7 @@ from styles import (
 from resources import load_image, get_product_image
 from discount import calculate_price_with_discount
 from error_handler import safe_call, validate_positive_int
+from db_products import get_product_sizes
 from order_manager import (
     add_order_to_db,
     update_product_quantity,
@@ -92,6 +93,23 @@ class ViewForm:
         tk.Entry(qty_row, textvariable=self.qty_var, width=6,
                  font=font(FONT_SIZE_NORMAL)).pack(side="left")
 
+        # === Выбор размера (если есть) ===
+        size_frame = tk.Frame(info_frame, bg=COLOR_MAIN_BG)
+        size_frame.pack(fill="x", pady=3)
+        tk.Label(size_frame, text="Размер:", font=font(FONT_SIZE_NORMAL, bold=True),
+                 width=15, anchor="w", bg=COLOR_MAIN_BG).pack(side="left")
+
+        # Получаем размеры из БД (в варианте 4 размеров нет — будет «—»)
+        sizes = get_product_sizes(self.product[0])
+        if not sizes:
+            sizes = ["—"]
+
+        self.size_var = tk.StringVar(value=sizes[0])
+        size_combo = ttk.Combobox(size_frame, textvariable=self.size_var,
+                                  values=sizes, state="readonly", width=5,
+                                  font=font(FONT_SIZE_NORMAL))
+        size_combo.pack(side="left")
+
         # Кнопки
         btn_frame = tk.Frame(self.window, bg=COLOR_MAIN_BG)
         btn_frame.pack(fill="x", pady=10)
@@ -122,7 +140,7 @@ class ViewForm:
         # количество из поля ввода (ДЗ пары 19)
         ok, qty = validate_positive_int(self.qty_var.get(), "Количество")
         if not ok:
-            messagebox.showwarning("Некорректные данные", qty)
+            messagebox.showwarning("Ошибка ввода", qty)
             return
 
         try:
@@ -138,7 +156,7 @@ class ViewForm:
             add_order_to_db("Иванов Иван Иванович", product_id, qty)
             update_product_quantity(product_id, new_qty)
 
-            messagebox.showinfo("Успех", "Заказ оформлен")
+            messagebox.showinfo("Успех", f"Товар добавлен в заказ ({qty} шт.)")
 
             if self.on_add_to_order:
                 self.on_add_to_order()
