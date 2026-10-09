@@ -44,6 +44,14 @@ def has_orders_in_previous_month(product_id, date):
         (product_id, start, end)
     )
     count = cur.fetchone()[0]
+    # с пары 22 новые заказы хранят товар в Состав_заказа
+    cur.execute(
+        "SELECT COUNT(*) FROM Состав_заказа "
+        "JOIN Заказ ON Заказ.id = Состав_заказа.заказ_id "
+        "WHERE Состав_заказа.товар_id = ? AND Заказ.дата BETWEEN ? AND ?",
+        (product_id, start, end)
+    )
+    count += cur.fetchone()[0]
     conn.close()
     return count > 0
 

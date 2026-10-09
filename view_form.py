@@ -12,7 +12,7 @@ from discount import calculate_price_with_discount
 from error_handler import safe_call, validate_positive_int
 from db_products import get_product_sizes
 from order_manager import (
-    add_order_to_db,
+    create_order,
     update_product_quantity,
     get_product_quantity
 )
@@ -77,6 +77,7 @@ class ViewForm:
                           self.product[0], self.product[4], datetime.now())
         if price is None:
             price = self.product[4]
+        self.price = price   # цена на момент заказа (для Состав_заказа)
         self._add_field(info_frame, "Вес", f"{self.product[3]} г")
         self._add_field(info_frame, "Наименование", self.product[2])
         self._add_field(info_frame, "Категория", self.product[1])
@@ -153,7 +154,9 @@ class ViewForm:
                 return
 
             new_qty = current_qty - qty
-            add_order_to_db("Иванов Иван Иванович", product_id, qty)
+            size = self.size_var.get()
+            size = None if size == "—" else size
+            create_order("Иванов Иван Иванович", [(product_id, size, qty, self.price)])
             update_product_quantity(product_id, new_qty)
 
             messagebox.showinfo("Успех", f"Товар добавлен в заказ ({qty} шт.)")

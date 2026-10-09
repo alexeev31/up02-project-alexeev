@@ -9,21 +9,95 @@ def get_connection():
     return sqlite3.connect(DB_PATH)
 
 
-def add_order_to_db(client, product_id, quantity):
-    """Добавляет новый заказ в БД."""
+def add_order_to_db(client, date=None):
+    """
+    Добавляет новый заказ в БД.
+    :param client: ФИО клиента
+    :param date: дата заказа (по умолчанию — сегодня)
+    :return: id заказа или None при ошибке
+    """
+    if date is None:
+        date = datetime.now().strftime("%Y-%m-%d")
+
     conn = get_connection()
     cur = conn.cursor()
-    date = datetime.now().strftime("%Y-%m-%d")
 
     cur.execute(
-        "INSERT INTO Заказ (дата, клиент, товар_id, количество) VALUES (?, ?, ?, ?)",
-        (date, client, product_id, quantity)
+        "INSERT INTO Заказ (дата, клиент) VALUES (?, ?)",
+        (date, client)
     )
-
     conn.commit()
     order_id = cur.lastrowid
     conn.close()
+
     return order_id
+
+
+def add_order_item(order_id, product_id, size, quantity, price):
+    """
+    Добавляет позицию в состав заказа.
+    :param order_id: id заказа
+    :param product_id: id товара
+    :param size: размер
+    :param quantity: количество
+    :param price: цена за единицу на момент заказа
+    :return: id позиции или None
+    """
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        "INSERT INTO Состав_заказа "
+        "(заказ_id, товар_id, размер, количество, цена) "
+        "VALUES (?, ?, ?, ?, ?)",
+        (order_id, product_id, size, quantity, price)
+    )
+    conn.commit()
+    item_id = cur.lastrowid
+    conn.close()
+
+    return item_id
+
+
+def create_order(client, items):
+    """
+    Создаёт заказ с несколькими позициями.
+    :param client: ФИО клиента
+    :param items: список кортежей (product_id, size, quantity, price)
+    :return: id заказа
+    """
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        # 1. Создаём заказ
+        date = datetime.now().strftime("%Y-%m-%d")
+        cur.execute(
+            "INSERT INTO Заказ (дата, клиент) VALUES (?, ?)",
+            (date, client)
+        )
+        order_id = cur.lastrowid
+
+        # 2. Добавляем позиции
+        for product_id, size, quantity, price in items:
+            cur.execute(
+                "INSERT INTO Состав_заказа "
+                "(заказ_id, товар_id, размер, количество, цена) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (order_id, product_id, size, quantity, price)
+            )
+
+        # 3. Фиксируем изменения
+        conn.commit()
+        return order_id
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка создания заказа: {e}")
+        return None
+
+    finally:
+        conn.close()
 
 
 def update_product_quantity(product_id, new_quantity):
