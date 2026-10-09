@@ -66,7 +66,11 @@ def _add_text_info(card, product, bg_color, qty):
     _add_label(text_frame, f"{name} | {weight} г",
                bg_color, bold=True, size=FONT_SIZE_HEADER)
     _add_label(text_frame, f"Категория: {category}", bg_color)
-    _add_label(text_frame, f"Количество: {_indicator(qty)} ({qty})", bg_color)
+
+    # Количество с индикатором
+    indicator = _indicator(qty)
+    _add_label(text_frame, f"Количество: {indicator} ({qty})", bg_color)
+
     _add_label(text_frame, f"Состав: {composition}", bg_color)
     _add_label(text_frame, f"{format_price(price)} руб.",
                bg_color, bold=True, size=FONT_SIZE_HEADER, align="e")
@@ -80,7 +84,12 @@ def _add_label(parent, text, bg_color, bold=False,
 
 
 def _indicator(qty):
-    """Индикатор «много/мало» (порог 5)."""
+    """
+    Индикатор «много/мало» (порог 5).
+
+    :param qty: количество товара
+    :return: «много» или «мало»
+    """
     return "много" if qty > 5 else "мало"
 
 
