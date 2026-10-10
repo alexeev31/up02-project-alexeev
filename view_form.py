@@ -13,7 +13,6 @@ from error_handler import safe_call, validate_positive_int
 from db_products import get_product_sizes
 from order_manager import (
     create_order,
-    update_product_quantity,
     get_product_quantity
 )
 
@@ -153,16 +152,21 @@ class ViewForm:
                                        f"Доступно только {current_qty} шт.")
                 return
 
-            new_qty = current_qty - qty
             size = self.size_var.get()
             size = None if size == "—" else size
-            create_order("Иванов Иван Иванович", [(product_id, size, qty, self.price)])
-            update_product_quantity(product_id, new_qty)
+            # create_order сам уменьшает остаток (транзакция)
+            order_id = create_order("Иванов Иван Иванович",
+                                    [(product_id, size, qty, self.price)])
+            if order_id is None:
+                messagebox.showerror("Ошибка", "Недостаточно товара, заказ не создан")
+                return
 
-            messagebox.showinfo("Успех", f"Товар добавлен в заказ ({qty} шт.)")
-
+            # Вызываем callback
             if self.on_add_to_order:
                 self.on_add_to_order()
+
+            messagebox.showinfo("Успех", f"Товар добавлен в заказ ({qty} шт.)")
+            self.window.destroy()
 
         except Exception as e:
             messagebox.showerror("Ошибка заказа", f"Не удалось добавить товар:\n{e}")
