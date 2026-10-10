@@ -20,7 +20,7 @@ class OrderItemsWindow:
         self.order_id = order_id
         self.window = tk.Toplevel(parent)
         self.window.title(f"Состав заказа №{order_id}")
-        self.window.geometry("700x400")
+        self.window.geometry("850x500")
         self.window.configure(bg=COLOR_MAIN_BG)
 
         self.build_ui()
@@ -38,17 +38,21 @@ class OrderItemsWindow:
                  bg=COLOR_SECONDARY_BG).pack(pady=15)
 
         # Таблица позиций
-        columns = ("name", "size", "quantity", "price", "total")
+        # вариант 4: вместо «Производство» — вес
+        columns = ("name", "weight", "size",
+                   "quantity", "price", "total")
         self.tree = ttk.Treeview(self.window, columns=columns,
-                                 show="headings", height=10)
+                                 show="headings", height=12)
 
         self.tree.heading("name", text="Товар")
+        self.tree.heading("weight", text="Вес, г")
         self.tree.heading("size", text="Размер")
         self.tree.heading("quantity", text="Кол-во")
         self.tree.heading("price", text="Цена")
         self.tree.heading("total", text="Сумма")
 
-        self.tree.column("name", width=250, anchor="w")
+        self.tree.column("name", width=200, anchor="w")
+        self.tree.column("weight", width=120, anchor="w")
         self.tree.column("size", width=70, anchor="center")
         self.tree.column("quantity", width=70, anchor="center")
         self.tree.column("price", width=100, anchor="e")
@@ -59,12 +63,19 @@ class OrderItemsWindow:
         # Итоговая сумма
         self.total_label = tk.Label(self.window, text="",
                                     font=font(FONT_SIZE_NORMAL, bold=True),
+                                    fg=COLOR_ACCENT,
                                     bg=COLOR_MAIN_BG)
-        self.total_label.pack(pady=5)
+        self.total_label.pack(pady=10)
 
         # Кнопки
         btn_frame = tk.Frame(self.window, bg=COLOR_MAIN_BG)
         btn_frame.pack(fill="x", pady=10)
+
+        tk.Button(btn_frame, text="Обновить",
+                  command=self.load_items,
+                  bg=COLOR_ACCENT, fg="white",
+                  font=font(FONT_SIZE_NORMAL),
+                  padx=15, pady=5).pack(side="left", padx=20)
 
         tk.Button(btn_frame, text="Назад",
                   command=self.window.destroy,
@@ -78,21 +89,34 @@ class OrderItemsWindow:
         for row in self.tree.get_children():
             self.tree.delete(row)
 
-        # Загружаем позиции
         try:
             items = om.get_order_items(self.order_id)
-            total = 0.0
+
+            if not items:
+                messagebox.showinfo("Информация", "Заказ пуст")
+                return
 
             for item in items:
-                name, size, quantity, price = item[1], item[2], item[3], item[4]
+                # item = (id, название, вес, размер, количество, цена)
+                name = item[1]
+                weight = item[2]
+                size = item[3]
+                quantity = item[4]
+                price = item[5]
                 item_total = quantity * price
-                total += item_total
 
                 self.tree.insert("", tk.END,
-                                 values=(name, size, quantity,
-                                         f"{price:.2f}", f"{item_total:.2f}"))
+                                 values=(name, weight, size,
+                                         quantity,
+                                         f"{price:.2f}",
+                                         f"{item_total:.2f}"))
 
-            self.total_label.config(text=f"Итого: {total:.2f} руб.")
+            # Итоговая сумма
+            total = om.get_order_total(self.order_id)
+            self.total_label.config(
+                text=f"ИТОГО ПО ЗАКАЗУ: {total:.2f} руб."
+            )
 
         except Exception as e:
-            messagebox.showerror("Ошибка", f"Не удалось загрузить состав:\n{e}")
+            messagebox.showerror("Ошибка",
+                                 f"Не удалось загрузить состав:\n{e}")

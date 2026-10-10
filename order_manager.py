@@ -206,20 +206,45 @@ def get_all_orders():
 
 def get_order_items(order_id):
     """
-    Возвращает состав заказа.
+    Возвращает состав заказа с полной информацией.
     :param order_id: id заказа
-    :return: список кортежей (id, название, размер, количество, цена)
+    :return: список кортежей
+             (id, название, вес, размер, количество, цена)
     """
+    # вариант 4: поля «производство» нет — вместо него вес
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT Состав_заказа.id, Товар.название,
-               Состав_заказа.размер, Состав_заказа.количество,
-               Состав_заказа.цена
+        SELECT
+            Состав_заказа.id,
+            Товар.название,
+            Товар.вес,
+            Состав_заказа.размер,
+            Состав_заказа.количество,
+            Состав_заказа.цена
         FROM Состав_заказа
         JOIN Товар ON Состав_заказа.товар_id = Товар.id
         WHERE Состав_заказа.заказ_id = ?
+        ORDER BY Состав_заказа.id
     """, (order_id,))
     rows = cur.fetchall()
     conn.close()
     return rows
+
+
+def get_order_total(order_id):
+    """
+    Возвращает итоговую сумму заказа.
+    :param order_id: id заказа
+    :return: сумма (float)
+    """
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT SUM(количество * цена)
+        FROM Состав_заказа
+        WHERE заказ_id = ?
+    """, (order_id,))
+    row = cur.fetchone()
+    conn.close()
+    return row[0] or 0.0
