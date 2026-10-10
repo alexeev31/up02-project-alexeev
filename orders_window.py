@@ -104,4 +104,4 @@ class OrdersWindow:
 
         # Открываем окно состава заказа
         from order_items_window import OrderItemsWindow
-        OrderItemsWindow(self.window, order_id)
+        OrderItemsWindow(self.window, order_id, self.current_user)
