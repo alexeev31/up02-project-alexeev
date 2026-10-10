@@ -44,7 +44,7 @@ class ViewForm:
 
     def build_ui(self):
         """Строит интерфейс формы."""
-        # Шапка — ГОТОВО
+        # Шапка
         header = tk.Frame(self.window, bg=COLOR_SECONDARY_BG, height=60)
         header.pack(fill="x")
         header.pack_propagate(False)
@@ -53,11 +53,11 @@ class ViewForm:
                  font=font(FONT_SIZE_TITLE, bold=True),
                  bg=COLOR_SECONDARY_BG).pack(pady=15)
 
-        # Основная область — ГОТОВО
+        # Основная область
         main = tk.Frame(self.window, bg=COLOR_MAIN_BG)
         main.pack(fill="both", expand=True, padx=20, pady=20)
 
-        # Изображение — ГОТОВО
+        # Изображение
         img_frame = tk.Frame(main, bg=COLOR_MAIN_BG)
         img_frame.pack(side="left", padx=10)
 

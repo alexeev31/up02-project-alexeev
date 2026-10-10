@@ -182,7 +182,6 @@ def get_product_quantity(product_id):
     :param product_id: id товара
     :return: количество или 0
     """
-    # ГОТОВО
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("SELECT количество FROM Товар WHERE id = ?", (product_id,))
