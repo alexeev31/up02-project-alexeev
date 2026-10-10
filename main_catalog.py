@@ -1,7 +1,7 @@
 """Главное окно с каталогом."""
 import tkinter as tk
 from tkinter import ttk
-from styles import (COLOR_SECONDARY_BG, COLOR_ACCENT, FONT_FAMILY,
+from styles import (COLOR_MAIN_BG, COLOR_SECONDARY_BG, COLOR_ACCENT, FONT_FAMILY,
                     FONT_SIZE_NORMAL, FONT_SIZE_TITLE, font)
 from config import APP_TITLE
 import database as db
@@ -34,12 +34,17 @@ class CatalogWindow:
         self.root = tk.Tk()
         self.root.title(APP_TITLE)
         self.root.geometry("900x700")
+        self.root.configure(bg=COLOR_MAIN_BG)
 
         # Иконка приложения
         set_app_icon(self.root, PATH_ICON)
 
+        self.current_user = None
+        self.user_label = None
+
         self.build_ui()
         self.load_products()
+        self.require_auth()
 
     def build_ui(self):
         # Шапка с логотипом и заголовком
@@ -57,16 +62,16 @@ class CatalogWindow:
             tk.Label(header, text="[ЛОГОТИП]",
                      bg=COLOR_SECONDARY_BG).pack(side="left", padx=15)
 
-        # Кнопка «Заказы»
-        tk.Button(header, text="Заказы", command=self.open_orders,
-                  bg=COLOR_ACCENT, fg="white",
-                  font=font(FONT_SIZE_NORMAL),
-                  padx=10, pady=5).pack(side="right", padx=10)
-
-        # Заголовок (по центру)
+        # Заголовок
         tk.Label(header, text="КАТАЛОГ ТОВАРОВ",
                  font=font(FONT_SIZE_TITLE, bold=True),
-                 bg=COLOR_SECONDARY_BG).pack(expand=True)
+                 bg=COLOR_SECONDARY_BG).pack(side="left", expand=True)
+
+        # ФИО пользователя (правый верхний угол)
+        self.user_label = tk.Label(header, text="Не авторизован",
+                                   font=font(FONT_SIZE_NORMAL),
+                                   bg=COLOR_SECONDARY_BG)
+        self.user_label.pack(side="right", padx=15)
 
         # Область с прокруткой
         self.canvas = tk.Canvas(self.root, bg="white", highlightthickness=0)
@@ -82,6 +87,56 @@ class CatalogWindow:
         self.canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
+    def require_auth(self):
+        """Запрашивает авторизацию."""
+        from auth import AuthWindow
+        AuthWindow(self.root, self.on_auth_success)
+
+    def on_auth_success(self, user):
+        """
+        Обработчик успешной авторизации.
+        :param user: кортеж (id, фамилия, имя, отчество, логин, роль)
+        """
+        self.current_user = user
+
+        # Отображаем ФИО
+        fio = f"{user[1]} {user[2]} {user[3] or ''}".strip()
+        self.user_label.config(text=f"{fio} ({user[5]})")
+
+        # Добавляем кнопки в зависимости от роли
+        self.add_role_buttons(user[5])
+
+    def add_role_buttons(self, role):
+        """
+        Добавляет кнопки в зависимости от роли.
+        :param role: название роли
+        """
+        header = self.user_label.master
+
+        if role in ("Менеджер", "Администратор"):
+            tk.Button(header, text="Заказы",
+                      command=self.open_orders,
+                      bg=COLOR_ACCENT, fg="white",
+                      font=font(FONT_SIZE_NORMAL),
+                      padx=10, pady=5).pack(side="right", padx=10)
+
+        if role == "Администратор":
+            tk.Button(header, text="Админ-панель",
+                      command=self.open_admin,
+                      bg=COLOR_ACCENT, fg="white",
+                      font=font(FONT_SIZE_NORMAL),
+                      padx=10, pady=5).pack(side="right", padx=10)
+
+    def open_orders(self):
+        """Открывает окно списка заказов."""
+        from orders_window import OrdersWindow
+        OrdersWindow(self.root, self.current_user)
+
+    def open_admin(self):
+        """Открывает админ-панель."""
+        from admin_panel import AdminPanel
+        AdminPanel(self.root, self.current_user)
+
     def load_products(self):
         """Загружает товары с обработкой ошибок."""
         products = safe_call(db.get_all_products) or []
@@ -94,11 +149,6 @@ class CatalogWindow:
         for widget in self.catalog_frame.winfo_children():
             widget.destroy()
         self.load_products()
-
-    def open_orders(self):
-        """Открывает окно списка заказов."""
-        from orders_window import OrdersWindow
-        OrdersWindow(self.root)
 
     def run(self):
         self.root.mainloop()

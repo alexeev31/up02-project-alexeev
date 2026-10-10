@@ -11,11 +11,13 @@ import order_manager as om
 class OrdersWindow:
     """Окно списка заказов."""
 
-    def __init__(self, parent):
+    def __init__(self, parent, current_user=None):
         """
         Инициализация окна.
         :param parent: родительское окно
+        :param current_user: текущий пользователь
         """
+        self.current_user = current_user
         self.window = tk.Toplevel(parent)
         self.window.title("Список заказов")
         self.window.geometry("800x500")
