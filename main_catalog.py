@@ -1,7 +1,8 @@
 """Главное окно с каталогом."""
 import tkinter as tk
 from tkinter import ttk
-from styles import COLOR_SECONDARY_BG, FONT_FAMILY, FONT_SIZE_TITLE, font
+from styles import (COLOR_SECONDARY_BG, COLOR_ACCENT, FONT_FAMILY,
+                    FONT_SIZE_NORMAL, FONT_SIZE_TITLE, font)
 from config import APP_TITLE
 import database as db
 from catalog import create_product_card
@@ -56,6 +57,12 @@ class CatalogWindow:
             tk.Label(header, text="[ЛОГОТИП]",
                      bg=COLOR_SECONDARY_BG).pack(side="left", padx=15)
 
+        # Кнопка «Заказы»
+        tk.Button(header, text="Заказы", command=self.open_orders,
+                  bg=COLOR_ACCENT, fg="white",
+                  font=font(FONT_SIZE_NORMAL),
+                  padx=10, pady=5).pack(side="right", padx=10)
+
         # Заголовок (по центру)
         tk.Label(header, text="КАТАЛОГ ТОВАРОВ",
                  font=font(FONT_SIZE_TITLE, bold=True),
@@ -87,6 +94,11 @@ class CatalogWindow:
         for widget in self.catalog_frame.winfo_children():
             widget.destroy()
         self.load_products()
+
+    def open_orders(self):
+        """Открывает окно списка заказов."""
+        from orders_window import OrdersWindow
+        OrdersWindow(self.root)
 
     def run(self):
         self.root.mainloop()
